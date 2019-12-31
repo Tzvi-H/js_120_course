@@ -1,2 +1,2 @@
-**Launch School Javascript 101 course**
+**Launch School Javascript 120 course**
 
