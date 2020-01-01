@@ -17,7 +17,7 @@ function createComputer() {
   computerObject.choose = function() {
     let randomIndex = Math.floor(Math.random() * this.choices.length);
     this.move = this.choices[randomIndex];
-  }
+  };
 
   return computerObject;
 }
@@ -33,7 +33,7 @@ function createHuman() {
       console.log('\nSorry, invalid choice.');
     }
     this.move = choice;
-  }
+  };
 
   return humanObject;
 }
@@ -55,7 +55,12 @@ let RPSGame = {
 
   winningScoreReached() {
     return (this.human.score === this.winningScore) ||
-           (this.computer.score === this.winningScore)
+           (this.computer.score === this.winningScore);
+  },
+
+  resetScores() {
+    this.human.resetScore();
+    this.computer.resetScore();
   },
 
   calculateWinner() {
@@ -85,10 +90,10 @@ let RPSGame = {
   displayWinner(winner) {
     switch (winner) {
       case 'human':
-        console.log('You win!')
+        console.log('You win!');
         break;
       case ('computer'):
-        console.log('The computer wins!')
+        console.log('The computer wins!');
         break;
       default:
         console.log("It's a tie!");
@@ -120,16 +125,15 @@ let RPSGame = {
   play() {
     while (true) {
       this.displayWelcomeMessage();
-      this.human.resetScore();
-      this.computer.resetScore();
+      this.resetScores();
 
-      while (!this.winningScoreReached()) { 
+      while (!this.winningScoreReached()) {
         this.human.choose();
         this.computer.choose();
         let winner = this.calculateWinner();
         this.updateScore(winner);
         this.displayWinner(winner);
-        this.displayScore()
+        this.displayScore();
       }
 
       if (!this.playAgain()) break;
