@@ -4,6 +4,7 @@ function createPlayer() {
   return {
     move: null,
     score: 0,
+    history: [],
 
     resetScore() {
       this.score = 0;
@@ -13,9 +14,17 @@ function createPlayer() {
 
 function createComputer() {
   let computerObject = createPlayer();
+  computerObject.winningHistory = [];
+
   computerObject.choose = function(moves) {
-    let randomIndex = Math.floor(Math.random() * moves.length);
-    this.move = moves[randomIndex];
+    let options = moves.concat(this.winningHistory);
+    let randomIndex = Math.floor(Math.random() * options.length);
+    this.move = options[randomIndex];
+    this.history.push(this.move);
+  };
+
+  computerObject.updateWinningMoves = function(winner) {
+    if (winner === 'computer')  this.winningHistory.push(this.move);
   };
 
   return computerObject;
@@ -23,28 +32,30 @@ function createComputer() {
 
 function createHuman() {
   let humanObject = createPlayer();
+  
   humanObject.choose = function(moves) {
     let choice;
     while (true) {
-      console.log(`Please choose a move \n${moves.join(', ')}`);
+      console.log(`\nPlease choose a move \n${moves.join(', ')}`);
       choice = READLINE.prompt().toLowerCase();
       if (moves.includes(choice)) break;
       console.log('\nSorry, invalid choice.');
     }
     this.move = choice;
+    this.history.push(this.move);
   };
 
   return humanObject;
 }
 
 let RPSGame = {
-  winningScore: 2,
+  winningScore: 3,
   winningCombos: {
-    rock: ['lizard', 'scissors'],
-    paper: ['rock', 'spock'],
+    rock:     ['lizard', 'scissors'],
+    paper:    ['rock', 'spock'],
     scissors: ['paper', 'lizard'],
-    spock: ['scissors', 'rock'],
-    lizard: ['spock', 'paper']
+    spock:    ['scissors', 'rock'],
+    lizard:   ['spock', 'paper']
   },
   rules: "Scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons Spock, Spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves Spock, Spock vaporizes rock, and as it always has, rock crushes scissors.",
   human: createHuman(),
@@ -64,7 +75,7 @@ let RPSGame = {
     console.clear();
     console.log(`Welcome to ${this.formatMoves()}!`);
     console.log(this.rules);
-    console.log(`\nFirst to score ${this.winningScore} wins the game\n`);
+    console.log(`\nFirst to score ${this.winningScore} wins the game`);
   },
 
   displayGoodbyeMessage() {
@@ -76,6 +87,13 @@ let RPSGame = {
            (this.computer.score === this.winningScore);
   },
 
+  displayHistory() {
+    console.log('User/Computer (History)');
+    this.human.history.forEach((move, index) => {
+      console.log(`${move}/${this.computer.history[index]}`);
+    });
+  },
+
   resetScores() {
     this.human.resetScore();
     this.computer.resetScore();
@@ -85,7 +103,8 @@ let RPSGame = {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
 
-    console.log(`\nYou chose: ${humanMove}`);
+    console.clear();
+    console.log(`You chose: ${humanMove}`);
     console.log(`The computer chose: ${computerMove}`);
 
     if (this.winningCombos[humanMove].includes(computerMove)) {
@@ -139,18 +158,20 @@ let RPSGame = {
   play() {
     while (true) {
       this.displayWelcomeMessage();
-      this.resetScores();
 
       while (!this.winningScoreReached()) {
         this.human.choose(this.getMoves());
         this.computer.choose(this.getMoves());
         let winner = this.calculateWinner();
+        this.computer.updateWinningMoves(winner);
         this.updateScore(winner);
         this.displayWinner(winner);
         this.displayScore();
+        this.displayHistory();
       }
 
       if (!this.playAgain()) break;
+      this.resetScores();
     }
 
     this.displayGoodbyeMessage();
