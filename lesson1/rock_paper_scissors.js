@@ -32,13 +32,15 @@ function createComputer() {
 
 function createHuman() {
   let humanObject = createPlayer();
-  
+
   humanObject.choose = function(moves) {
     let choice;
     while (true) {
-      console.log(`\nPlease choose a move \n${moves.join(', ')}`);
+      console.log('\nPlease choose a move');
+      moves.forEach(move => console.log(`'${move.slice(0, 2)}' for ${move}`));
       choice = READLINE.prompt().toLowerCase();
-      if (moves.includes(choice)) break;
+      choice = moves.find(mv => mv === choice || mv.slice(0, 2) === choice);
+      if (choice) break;
       console.log('\nSorry, invalid choice.');
     }
     this.move = choice;
@@ -105,7 +107,7 @@ let RPSGame = {
 
     console.clear();
     console.log(`You chose: ${humanMove}`);
-    console.log(`The computer chose: ${computerMove}`);
+    console.log(`Computer chose: ${computerMove}`);
 
     if (this.winningCombos[humanMove].includes(computerMove)) {
       return 'human';
