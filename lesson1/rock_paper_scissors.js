@@ -1,5 +1,21 @@
 const READLINE = require('readline-sync');
 
+function createMove(type) {
+  return {
+    type,
+
+    compare(otherMove, winningCombos) {
+      if (winningCombos[this.type].includes(otherMove.type)) {
+        return 1;
+      } else if (winningCombos[otherMove.type].includes(this.type)) {
+        return -1;
+      } else {
+        return 0;
+      }
+    }
+  }
+}
+
 function createPlayer() {
   return {
     move: null,
@@ -25,8 +41,8 @@ function createComputer() {
     this.move = createMove(options[randomIndex]);
   };
 
-  computerObject.updateWinningMoves = function(winner) {
-    if (winner === 'computer')  this.winningHistory.push(this.move.type);
+  computerObject.addToWinningHistory = function(outcome) {
+    if (outcome === 'computer')  this.winningHistory.push(this.move.type);
   };
 
   return computerObject;
@@ -51,27 +67,11 @@ function createHuman() {
   return humanObject;
 }
 
-function createMove(type) {
-  return {
-    type,
-
-    compare(otherMove, combos) {
-      if (combos[this.type].includes(otherMove.type)) {
-        return 1;
-      } else if (combos[otherMove.type].includes(this.type)) {
-        return -1;
-      } else {
-        return 0;
-      }
-    }
-  }
-}
-
 function createRules() {
   return {
-    instructions: "Scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons Spock, Spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves Spock, Spock vaporizes rock, and as it always has, rock crushes scissors.",
+    instructions: "scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons spock, spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves spock, spock vaporizes rock, rock crushes scissors.",
     winningScore: 5,
-    moves: ['lizard', 'rock', 'paper', 'scissors', 'spock'],
+    gamePieces: ['lizard', 'rock', 'paper', 'scissors', 'spock'],
     winningCombos: {
       rock:     ['lizard', 'scissors'],
       paper:    ['rock', 'spock'],
@@ -79,20 +79,26 @@ function createRules() {
       spock:    ['scissors', 'rock'],
       lizard:   ['spock', 'paper']
     },
+
+    capitalizedPieces() {
+      return this.gamePieces
+                 .map(move => move[0].toUpperCase() + move.slice(1))
+                 .join(' ');
+    },
   }
 }
 
 function createHistory() {
   return {
-    humanMoves: [],
-    computerMoves: [],
-    winningMoves: [],
+    humanChoices: [],
+    computerChoices: [],
+    outcomes: [],
 
     display() {
       console.log('Last 10 rounds')
-      this.humanMoves.slice(0, 10).forEach((move, index) => {
-        console.log(`${index + 1}. ${move}/${this.computerMoves[index]}` + 
-                    ` => ${this.winningMoves[index]}`);
+      this.humanChoices.slice(0, 10).forEach((choice, index) => {
+        console.log(`${index + 1}. ${choice}/${this.computerChoices[index]}` +
+                    ` => ${this.outcomes[index]}`);
       });
     }
   }
@@ -104,16 +110,9 @@ let RPSGame = {
   human: createHuman(),
   computer: createComputer(),
 
-  capitalizeMoves() {
-    return this.rules
-               .moves
-               .map(move => move[0].toUpperCase() + move.slice(1))
-               .join(' ');
-  },
-
   displayWelcomeMessage() {
     console.clear();
-    console.log(`Welcome to ${this.capitalizeMoves()}!`);
+    console.log(`Welcome to ${this.rules.capitalizedPieces()}!\n`);
     console.log(this.rules.instructions);
     console.log(`\nFirst to score ${this.rules.winningScore} wins the game`);
   },
@@ -132,37 +131,37 @@ let RPSGame = {
     this.computer.resetScore();
   },
 
-  calculateWinner() {
+  calculateRoundOutcome() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
-    let combos = this.rules.winningCombos;
-    switch (humanMove.compare(computerMove, combos)) {
+    let winningCombos = this.rules.winningCombos;
+    switch (humanMove.compare(computerMove, winningCombos)) {
       case 1:  return 'human';
       case -1: return 'computer';
       default: return 'tie';
     }
   },
 
-  updateScore(winner) {
-    if (winner !== 'tie') this[winner].incrementScore();
+  updateScore(outcome) {
+    if (outcome !== 'tie') this[outcome].incrementScore();
   },
 
-  updateHistory(winner) {
-    this.history.humanMoves.unshift(this.human.move.type);
-    this.history.computerMoves.unshift(this.computer.move.type);
-    this.history.winningMoves.unshift(winner);
+  updateHistory(outcome) {
+    this.history.humanChoices.unshift(this.human.move.type);
+    this.history.computerChoices.unshift(this.computer.move.type);
+    this.history.outcomes.unshift(outcome);
   },
 
-  displayChosenMoves() {
+  displayChoices() {
     console.clear();
     console.log(`You chose: ${this.human.move.type}`);
     console.log(`Computer chose: ${this.computer.move.type}\n`);
   },
 
-  displayWinner(winner) {
+  displayRoundOutcome(outcome) {
     let humanMove = this.human.move.type;
     let computerMove = this.computer.move.type;
-    switch (winner) {
+    switch (outcome) {
       case 'human':
         console.log(`${humanMove} beats ${computerMove}\nYou win!`);
         break;
@@ -179,7 +178,7 @@ let RPSGame = {
     console.log(`Computer score: ${this.computer.score}\n`);
   },
 
-  displayGameWinner() {
+  displayGameoutcome() {
     let winningScore = this.rules.winningScore
     if (this.human.score === winningScore) {
       console.log(`\nYou win the game!`)
@@ -199,24 +198,24 @@ let RPSGame = {
     return choice[0] === 'y';
   },
 
-  play(rules) {
+  play() {
     while (true) {
       this.displayWelcomeMessage();
 
       while (!this.winningScoreReached()) {
-        this.human.choose(this.rules.moves);
-        this.computer.choose(this.rules.moves);
-        let winner = this.calculateWinner();
-        this.updateScore(winner);
-        this.updateHistory(winner);
-        this.displayChosenMoves();
-        this.displayWinner(winner);
+        this.human.choose(this.rules.gamePieces);
+        this.computer.choose(this.rules.gamePieces);
+        let outcome = this.calculateRoundOutcome();
+        this.updateScore(outcome);
+        this.updateHistory(outcome);
+        this.displayChoices();
+        this.displayRoundOutcome(outcome);
         this.displayScore();
-        this.computer.updateWinningMoves(winner);
+        this.computer.addToWinningHistory(outcome);
         this.history.display();
       }
 
-      this.displayGameWinner();
+      this.displayGameoutcome();
       if (!this.playAgain()) break;
       this.resetScores();
     }
