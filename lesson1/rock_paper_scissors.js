@@ -215,7 +215,6 @@ let RPSGame = {
     this.displayScore();
     this.computer.updateWinningHistory(outcome);
     this.history.display();
-    console.log(this.computer.winningHistory);
   },
 
   play() {
