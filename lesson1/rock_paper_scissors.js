@@ -75,8 +75,8 @@ function createHuman() {
 
 function createRules() {
   return {
-    instructions: "scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons spock, spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves spock, spock vaporizes rock, rock crushes scissors.",
     winningScore: 5,
+    instructions: "scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons spock, spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves spock, spock vaporizes rock, rock crushes scissors.",
     gamePieces: ['lizard', 'rock', 'paper', 'scissors', 'spock'],
     winningCombos: {
       rock:     ['lizard', 'scissors'],
@@ -84,6 +84,12 @@ function createRules() {
       scissors: ['paper', 'lizard'],
       spock:    ['scissors', 'rock'],
       lizard:   ['spock', 'paper']
+    },
+
+    retrieveRule(move1, move2) {
+      return this.instructions
+                 .split(', ')
+                 .find(rule => rule.indexOf(move1) < rule.indexOf(move2));
     },
 
     capitalizedPieces() {
@@ -164,15 +170,22 @@ let RPSGame = {
     console.log(`Computer chose: ${this.computer.move.type}\n`);
   },
 
-  displayRoundOutcome(outcome) {
+  displayRule(outcome) {
     let humanMove = this.human.move.type;
     let computerMove = this.computer.move.type;
+    if (outcome !== 'tie') {
+      let rule = this.rules.retrieveRule(humanMove, computerMove);
+      console.log(rule);
+    }
+  },
+
+  displayRoundOutcome(outcome) {
     switch (outcome) {
       case 'human':
-        console.log(`${humanMove} beats ${computerMove}\nYou win!`);
+        console.log('\nYou win!');
         break;
       case ('computer'):
-        console.log(`${computerMove} beats ${humanMove}\nThe Computer wins!`);
+        console.log('Computer wins!');
         break;
       default:
         console.log("It's a tie!");
@@ -211,6 +224,7 @@ let RPSGame = {
     this.updateScore(outcome);
     this.updateHistory(outcome);
     this.displayChoices();
+    this.displayRule(outcome);
     this.displayRoundOutcome(outcome);
     this.displayScore();
     this.computer.updateWinningHistory(outcome);
