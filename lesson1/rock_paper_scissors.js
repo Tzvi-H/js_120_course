@@ -84,16 +84,16 @@ let RPSGame = {
     console.log('\nThanks for playing. Goodbye!');
   },
 
-  winningScoreReached() {
-    return (this.human.score === this.winningScore) ||
-           (this.computer.score === this.winningScore);
-  },
-
   displayHistory() {
-    console.log('User/Computer (History)');
+    console.log('User/Computer (HISTORY)');
     this.human.history.forEach((move, index) => {
       console.log(`${move}/${this.computer.history[index]}`);
     });
+  },
+
+  winningScoreReached() {
+    return (this.human.score === this.winningScore) ||
+           (this.computer.score === this.winningScore);
   },
 
   resetScores() {
@@ -104,10 +104,6 @@ let RPSGame = {
   calculateWinner() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
-
-    console.clear();
-    console.log(`You chose: ${humanMove}`);
-    console.log(`Computer chose: ${computerMove}`);
 
     if (this.winningCombos[humanMove].includes(computerMove)) {
       return 'human';
@@ -120,6 +116,12 @@ let RPSGame = {
 
   updateScore(winner) {
     if (winner !== 'tie') this[winner].score += 1;
+  },
+
+  displayChoices() {
+    console.clear();
+    console.log(`You chose: ${this.human.move}`);
+    console.log(`Computer chose: ${this.computer.move}`);
   },
 
   displayWinner(winner) {
@@ -164,12 +166,13 @@ let RPSGame = {
       while (!this.winningScoreReached()) {
         this.human.choose(this.getMoves());
         this.computer.choose(this.getMoves());
+        this.displayChoices();
         let winner = this.calculateWinner();
-        this.computer.updateWinningMoves(winner);
         this.updateScore(winner);
         this.displayWinner(winner);
         this.displayScore();
         this.displayHistory();
+        this.computer.updateWinningMoves(winner);
       }
 
       if (!this.playAgain()) break;
