@@ -78,24 +78,21 @@ function createRules() {
     winningScore: 5,
     instructions: "scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons spock, spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves spock, spock vaporizes rock, rock crushes scissors.",
     gamePieces: ['lizard', 'rock', 'paper', 'scissors', 'spock'],
-    winningCombos: {
-      rock:     ['lizard', 'scissors'],
-      paper:    ['rock', 'spock'],
-      scissors: ['paper', 'lizard'],
-      spock:    ['scissors', 'rock'],
-      lizard:   ['spock', 'paper']
-    },
 
     retrieveRule(move1, move2) {
-      return this.instructions
-                 .split(', ')
-                 .find(rule => rule.indexOf(move1) < rule.indexOf(move2));
+      let comesEarlier = function(item1, item2, string) {
+        return string.includes(item1) &&
+               string.indexOf(item1) < string.indexOf(item2);
+      };
+
+      let rules = this.instructions.split(', ');
+      return rules.find(rule => comesEarlier(move1, move2, rule)) ||
+             rules.find(rule => comesEarlier(move2, move1, rule));
     },
 
     capitalizedPieces() {
       return this.gamePieces
-                 .map(move => move[0].toUpperCase() + move.slice(1))
-                 .join(' ');
+                 .map(move => move[0].toUpperCase() + move.slice(1)).join(' ');
     },
   };
 }
@@ -170,12 +167,21 @@ let RPSGame = {
     console.log(`Computer chose: ${this.computer.move.type}\n`);
   },
 
-  displayRule(outcome) {
+  retrieveRule() {
     let humanMove = this.human.move.type;
     let computerMove = this.computer.move.type;
-    if (outcome !== 'tie') {
-      let rule = this.rules.retrieveRule(humanMove, computerMove);
-      console.log(rule);
+    let rule = this.rules.retrieveRule(humanMove, computerMove);
+    return rule || 'tie';
+  },
+
+  calculateWinner(rule) {
+    if (rule === 'tie') {
+      return 'tie';
+    } else {
+      let winningMove = rule.split(' ')[0];
+      return this.human.move.type === winningMove ?
+             'human' :
+             'computer';
     }
   },
 
@@ -190,6 +196,10 @@ let RPSGame = {
       default:
         console.log("It's a tie!");
     }
+  },
+
+  displayRule(rule) {
+    if (rule !== 'tie') console.log(rule);
   },
 
   displayScore() {
@@ -220,11 +230,12 @@ let RPSGame = {
   playRound() {
     this.human.choose(this.rules.gamePieces);
     this.computer.choose(this.rules.gamePieces);
-    let outcome = this.calculateRoundOutcome();
+    let rule = this.retrieveRule();
+    let outcome = this.calculateWinner(rule);
     this.updateScore(outcome);
     this.updateHistory(outcome);
     this.displayChoices();
-    this.displayRule(outcome);
+    this.displayRule(rule);
     this.displayRoundOutcome(outcome);
     this.displayScore();
     this.computer.updateWinningHistory(outcome);
