@@ -13,7 +13,7 @@ function createMove(type) {
         return 0;
       }
     }
-  }
+  };
 }
 
 function createPlayer() {
@@ -53,11 +53,12 @@ function createHuman() {
 
   humanObject.choose = function(moves) {
     let choice;
+    let matchesChoice = (mv => mv === choice || mv.slice(0, 2) === choice);
     while (true) {
       console.log('\nPlease choose a move');
       moves.forEach(move => console.log(`'${move.slice(0, 2)}' for ${move}`));
       choice = READLINE.prompt().toLowerCase();
-      choice = moves.find(mv => mv === choice || mv.slice(0, 2) === choice);
+      choice = moves.find(matchesChoice);
       if (choice) break;
       console.log('\nSorry, invalid choice.');
     }
@@ -85,7 +86,7 @@ function createRules() {
                  .map(move => move[0].toUpperCase() + move.slice(1))
                  .join(' ');
     },
-  }
+  };
 }
 
 function createHistory() {
@@ -95,13 +96,13 @@ function createHistory() {
     outcomes: [],
 
     display() {
-      console.log('Last 10 rounds')
+      console.log('Last 10 rounds');
       this.humanChoices.slice(0, 10).forEach((choice, index) => {
         console.log(`${index + 1}. ${choice}/${this.computerChoices[index]}` +
                     ` => ${this.outcomes[index]}`);
       });
     }
-  }
+  };
 }
 
 let RPSGame = {
@@ -179,9 +180,9 @@ let RPSGame = {
   },
 
   displayGameoutcome() {
-    let winningScore = this.rules.winningScore
+    let winningScore = this.rules.winningScore;
     if (this.human.score === winningScore) {
-      console.log(`\nYou win the game!`)
+      console.log(`\nYou win the game!`);
     } else {
       console.log(`\nYou lose the game!`);
     }
