@@ -41,8 +41,13 @@ function createComputer() {
     this.move = createMove(options[randomIndex]);
   };
 
-  computerObject.addToWinningHistory = function(outcome) {
-    if (outcome === 'computer')  this.winningHistory.push(this.move.type);
+  computerObject.updateWinningHistory = function(outcome) {
+    if (outcome === 'computer') {
+      this.winningHistory.push(this.move.type);
+    } else if (outcome === 'human') {
+      let index = this.winningHistory.indexOf(this.move.type);
+      if (index >= 0) this.winningHistory.splice(index, 1);
+    }
   };
 
   return computerObject;
@@ -208,8 +213,9 @@ let RPSGame = {
     this.displayChoices();
     this.displayRoundOutcome(outcome);
     this.displayScore();
-    this.computer.addToWinningHistory(outcome);
+    this.computer.updateWinningHistory(outcome);
     this.history.display();
+    console.log(this.computer.winningHistory);
   },
 
   play() {
