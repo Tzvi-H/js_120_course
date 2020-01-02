@@ -3,16 +3,6 @@ const READLINE = require('readline-sync');
 function createMove(type) {
   return {
     type,
-
-    compare(otherMove, winningCombos) {
-      if (winningCombos[this.type].includes(otherMove.type)) {
-        return 1;
-      } else if (winningCombos[otherMove.type].includes(this.type)) {
-        return -1;
-      } else {
-        return 0;
-      }
-    }
   };
 }
 
@@ -135,19 +125,21 @@ let RPSGame = {
            (this.computer.score === this.rules.winningScore);
   },
 
-  resetScores() {
-    this.human.resetScore();
-    this.computer.resetScore();
+  retrieveRule() {
+    let humanMove = this.human.move.type;
+    let computerMove = this.computer.move.type;
+    let rule = this.rules.retrieveRule(humanMove, computerMove);
+    return rule || 'tie';
   },
 
-  calculateRoundOutcome() {
-    let humanMove = this.human.move;
-    let computerMove = this.computer.move;
-    let winningCombos = this.rules.winningCombos;
-    switch (humanMove.compare(computerMove, winningCombos)) {
-      case 1:  return 'human';
-      case -1: return 'computer';
-      default: return 'tie';
+  calculateWinner(rule) {
+    if (rule === 'tie') {
+      return 'tie';
+    } else {
+      let winningMove = rule.split(' ')[0];
+      return this.human.move.type === winningMove ?
+             'human' :
+             'computer';
     }
   },
 
@@ -167,28 +159,14 @@ let RPSGame = {
     console.log(`Computer chose: ${this.computer.move.type}\n`);
   },
 
-  retrieveRule() {
-    let humanMove = this.human.move.type;
-    let computerMove = this.computer.move.type;
-    let rule = this.rules.retrieveRule(humanMove, computerMove);
-    return rule || 'tie';
-  },
-
-  calculateWinner(rule) {
-    if (rule === 'tie') {
-      return 'tie';
-    } else {
-      let winningMove = rule.split(' ')[0];
-      return this.human.move.type === winningMove ?
-             'human' :
-             'computer';
-    }
+  displayRule(rule) {
+    if (rule !== 'tie') console.log(rule);
   },
 
   displayRoundOutcome(outcome) {
     switch (outcome) {
       case 'human':
-        console.log('\nYou win!');
+        console.log('You win!');
         break;
       case ('computer'):
         console.log('Computer wins!');
@@ -196,10 +174,6 @@ let RPSGame = {
       default:
         console.log("It's a tie!");
     }
-  },
-
-  displayRule(rule) {
-    if (rule !== 'tie') console.log(rule);
   },
 
   displayScore() {
@@ -214,6 +188,11 @@ let RPSGame = {
     } else {
       console.log(`\nYou lose the game!`);
     }
+  },
+
+  resetScores() {
+    this.human.resetScore();
+    this.computer.resetScore();
   },
 
   playAgain() {
