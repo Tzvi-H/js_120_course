@@ -199,24 +199,28 @@ let RPSGame = {
     return choice[0] === 'y';
   },
 
+  playRound() {
+    this.human.choose(this.rules.gamePieces);
+    this.computer.choose(this.rules.gamePieces);
+    let outcome = this.calculateRoundOutcome();
+    this.updateScore(outcome);
+    this.updateHistory(outcome);
+    this.displayChoices();
+    this.displayRoundOutcome(outcome);
+    this.displayScore();
+    this.computer.addToWinningHistory(outcome);
+    this.history.display();
+  },
+
   play() {
     while (true) {
       this.displayWelcomeMessage();
 
       while (!this.winningScoreReached()) {
-        this.human.choose(this.rules.gamePieces);
-        this.computer.choose(this.rules.gamePieces);
-        let outcome = this.calculateRoundOutcome();
-        this.updateScore(outcome);
-        this.updateHistory(outcome);
-        this.displayChoices();
-        this.displayRoundOutcome(outcome);
-        this.displayScore();
-        this.computer.addToWinningHistory(outcome);
-        this.history.display();
+        this.playRound();
       }
-
       this.displayGameoutcome();
+
       if (!this.playAgain()) break;
       this.resetScores();
     }
