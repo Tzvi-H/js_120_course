@@ -90,5 +90,3 @@ RPSGame.prototype = {
   }
 }
 RPSGame.prototype.constructor = RPSGame;
-
-console.log(RPSGame.prototype.constructor.name)
