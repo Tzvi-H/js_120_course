@@ -54,123 +54,72 @@ class Deck {
   }
 }
 
+class Hand {
+  constructor() {
+    this.cards = [];
+  }
+
+  add(card) {
+    this.cards.push(card);
+  }
+
+  isBusted() {
+    return this.score() > 21
+  }
+
+  score() {
+    let score = this.cards.reduce((sum, card) => {
+      return sum + card.value();
+    }, 0)
+    score = this.adjustForAces(score, this.cards);
+    return score;
+  }
+
+  adjustForAces(score, cards) {
+    let aces = this.aceCount(cards);
+    while (score > 21 && aces > 0) {
+      score -= 10;
+      aces -= 1;
+    }
+    return score;
+  }
+
+  aceCount(cards) {
+    return cards.filter(card => card.rank === 'Ace').length;
+  }
+}
+
 class Participant {
   constructor() {
-    //STUB
-    // What sort of state does a participant need?
-    // Score? Hand? Amount of money available?
-    // What else goes here? all the redundant behaviors from Player and Dealer?
+    this.hand = new Hand();
+  }
+
+  hit(deck) {
+    let card = deck.deal();
+    this.hand.add(card);
+  }
+
+  reveal() {
+    this.hand.cards.forEach(card => {
+      console.log(card.toString());
+    });
+    console.log(`Score: ${this.hand.score()}`)
   }
 }
 
 class Player extends Participant {
   constructor() {
-    //STUB
-    // What sort of state does a player need?
-    // Score? Hand? Amount of money available?
-  }
-
-  hit() {
-    //STUB
-  }
-
-  stay() {
-    //STUB
-  }
-
-  isBusted() {
-    //STUB
-  }
-
-  score() {
-    //STUB
+    super();
   }
 }
 
 class Dealer extends Participant {
-  // Very similar to a Player; do we need this?
-
   constructor() {
-    //STUB
-    // What sort of state does a dealer need?
-    // Score? Hand? Deck of cards? Bow tie?
-  }
-
-  hit() {
-    //STUB
-  }
-
-  stay() {
-    //STUB
-  }
-
-  isBusted() {
-    //STUB
-  }
-
-  score() {
-    //STUB
+    super();
   }
 
   hide() {
-    //STUB
-  }
-
-  reveal() {
-    //STUB
-  }
-
-  deal() {
-    //STUB
-    // does the dealer or the deck deal?
+    console.log(this.hand.cards[0].toString());
+    console.log('Score: ?');
   }
 }
-
-class TwentyOneGame {
-  constructor() {
-    //Stub
-    // State? deck? two participants?
-  }
-
-  start() {
-    //Spike
-    this.displayWelcomeMessage();
-    this.dealCards();
-    this.showCards();
-    this.playerTurn();
-    this.dealerTurn();
-    this.displayResult();
-    this.displayGoodbyeMessage();
-  }
-
-  dealCards() {
-    //STUB
-  }
-
-  showCards() {
-    //STUB
-  }
-
-  playerTurn() {
-    //STUB
-  }
-
-  dealerTurn() {
-    //STUB
-  }
-
-  displayWelcomeMessage() {
-    //STUB
-  }
-
-  displayGoodbyeMessage() {
-    
-  }
-
-  displayResult() {
-    //STUB
-  }
-}
-
-let game = new TwentyOneGame();
-game.start();
